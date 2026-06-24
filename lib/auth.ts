@@ -1,12 +1,15 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function getSession() {
+// cache() memoizes this per render pass so multiple calls (e.g. a Server
+// Action's own check plus the page re-render it triggers) hit Supabase once.
+export const getSession = cache(async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
   return data.user;
-}
+});
 
 export async function requireAuth() {
   const user = await getSession();
@@ -14,7 +17,7 @@ export async function requireAuth() {
   return user;
 }
 
-export async function requireAdmin() {
+export const requireAdmin = cache(async () => {
   const user = await requireAuth();
   const supabase = await createClient();
   const { data: profile } = await supabase
@@ -25,4 +28,4 @@ export async function requireAdmin() {
 
   if (profile?.role !== "admin") redirect("/admin/login");
   return user;
-}
+});
