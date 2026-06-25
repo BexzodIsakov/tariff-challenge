@@ -14,6 +14,9 @@ export default async function AdminHomePage() {
         <Link href="/admin/gifts" className="underline">
           Gift applications
         </Link>
+        <Link href="/admin/telegram" className="underline">
+          Telegram bot
+        </Link>
       </nav>
     </div>
   );

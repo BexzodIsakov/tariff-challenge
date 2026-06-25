@@ -1,8 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { generateActivationCode } from "@/lib/code";
 import { requireAuth } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { sendGiftApplicationNotification } from "@/lib/telegram";
 
 export async function applyForGift(formData: FormData) {
   const user = await requireAuth();
@@ -31,11 +34,81 @@ export async function applyForGift(formData: FormData) {
 
   // The unique partial index on gift_applications (one pending per user) is
   // the safety net if this check ever races with itself.
-  await supabase
+  const { data: application, error: insertError } = await supabase
     .from("gift_applications")
-    .insert({ user_id: user.id, tariff_id: tariffId, status: "pending" });
+    .insert({ user_id: user.id, tariff_id: tariffId, status: "pending" })
+    .select<string, { id: string; tariffs: { name: string; price: number } | null }>(
+      "id, tariffs(name, price)"
+    )
+    .single();
 
-  // TODO: send Telegram message to admin + log to notification_logs (step 7)
+  if (insertError || !application) redirect("/dashboard?notice=already-pending");
+
+  const notification = await sendGiftApplicationNotification(
+    application.id,
+    user.email ?? "unknown",
+    application.tariffs?.name ?? "Unknown",
+    application.tariffs?.price ?? 0
+  );
+
+  // notification_logs has no insert policy for regular user sessions (see
+  // 008_rls.sql) — writes go through the service-role client by design.
+  const adminSupabase = createAdminClient();
+  await adminSupabase.from("notification_logs").insert({
+    application_id: application.id,
+    type: "telegram",
+    status: notification.success ? "sent" : "failed",
+    error_message: notification.success ? null : notification.error,
+  });
 
   redirect("/dashboard?notice=applied");
+}
+
+export async function approveGift(
+  applicationId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = createAdminClient();
+
+  const { data: application } = await supabase
+    .from("gift_applications")
+    .select<string, { id: string; tariffs: { period_months: number } | null }>(
+      "id, tariffs(period_months)"
+    )
+    .eq("id", applicationId)
+    .maybeSingle();
+
+  if (!application?.tariffs) {
+    return { success: false, error: "Application or tariff not found." };
+  }
+
+  const expiresAt = new Date();
+  expiresAt.setMonth(expiresAt.getMonth() + application.tariffs.period_months);
+
+  const { error } = await supabase
+    .from("gift_applications")
+    .update({
+      status: "approved",
+      activation_code: generateActivationCode(),
+      expires_at: expiresAt.toISOString(),
+    })
+    .eq("id", applicationId);
+
+  if (error) return { success: false, error: error.message };
+
+  // TODO: send the activation code email to the user (step 8)
+
+  return { success: true };
+}
+
+export async function rejectGift(
+  applicationId: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("gift_applications")
+    .update({ status: "rejected" })
+    .eq("id", applicationId);
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
 }
