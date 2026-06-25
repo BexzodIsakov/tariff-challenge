@@ -39,3 +39,9 @@ export async function signInAdmin(
 
   redirect("/admin");
 }
+
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/");
+}

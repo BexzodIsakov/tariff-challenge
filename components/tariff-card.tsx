@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { grantAccess } from "@/actions/access.actions";
+import { applyForGift } from "@/actions/gift.actions";
 import {
   Card,
   CardContent,
@@ -39,9 +41,16 @@ export function TariffCard({
       <CardFooter className="gap-2">
         {isAuthenticated ? (
           <>
-            {/* TODO: wire up mock payment + gift application actions in later steps */}
-            <Button>Buy</Button>
-            <Button variant="outline">Apply for gift</Button>
+            <form action={grantAccess}>
+              <input type="hidden" name="tariffId" value={tariff.id} />
+              <Button type="submit">Buy</Button>
+            </form>
+            <form action={applyForGift}>
+              <input type="hidden" name="tariffId" value={tariff.id} />
+              <Button variant="outline" type="submit">
+                Apply for gift
+              </Button>
+            </form>
           </>
         ) : (
           <>
