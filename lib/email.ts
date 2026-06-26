@@ -1,32 +1,27 @@
 import "server-only";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export async function sendActivationCodeEmail(
   to: string,
   activationCode: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM,
-        to,
-        subject: "Your gift activation code",
-        html: `<p>Your gift application has been approved!</p><p>Activation code: <strong>${activationCode}</strong></p><p>Enter it at <a href="${process.env.NEXT_PUBLIC_APP_URL}/activate">${process.env.NEXT_PUBLIC_APP_URL}/activate</a> to activate your access.</p>`,
-      }),
+    await transporter.sendMail({
+      from: `"Tariff App" <${process.env.SMTP_USER}>`,
+      to,
+      subject: "Your gift activation code",
+      html: `<p>Your gift application has been approved!</p><p>Activation code: <strong>${activationCode}</strong></p><p>Enter it at <a href="${process.env.NEXT_PUBLIC_APP_URL}/activate">${process.env.NEXT_PUBLIC_APP_URL}/activate</a> to activate your access.</p>`,
     });
-
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      return {
-        success: false,
-        error: body?.message ?? `Resend API error (${response.status})`,
-      };
-    }
-
     return { success: true };
   } catch (error) {
     return {
