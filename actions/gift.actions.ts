@@ -198,6 +198,13 @@ export async function activateGift(
   const admin = createAdminClient();
 
   await admin
+    .from("profiles")
+    .upsert(
+      { id: user.id, email: user.email ?? "", role: "user" },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
+  await admin
     .from("gift_applications")
     .update({ code_used: true })
     .eq("id", application.id);

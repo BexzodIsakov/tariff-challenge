@@ -23,6 +23,16 @@ export async function grantAccess(formData: FormData) {
   expiresAt.setMonth(expiresAt.getMonth() + tariff.period_months);
 
   const admin = createAdminClient();
+
+  // Ensure profile row exists — the DB trigger fires on first signup but may
+  // have been missed for users who signed in before the trigger was created.
+  await admin
+    .from("profiles")
+    .upsert(
+      { id: user.id, email: user.email ?? "", role: "user" },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
   const { error } = await admin.from("user_access").insert({
     user_id: user.id,
     tariff_id: tariffId,
