@@ -28,6 +28,5 @@ export async function grantAccess(formData: FormData) {
     expires_at: expiresAt.toISOString(),
   });
 
-  // /success doesn't exist until step 10 — dashboard shows access status for now.
-  redirect("/dashboard");
+  redirect("/success");
 }
