@@ -17,6 +17,9 @@ export default async function AdminHomePage() {
         <Link href="/admin/telegram" className="underline">
           Telegram bot
         </Link>
+        <Link href="/admin/notifications" className="underline">
+          Notification logs
+        </Link>
       </nav>
     </div>
   );
