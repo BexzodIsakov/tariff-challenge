@@ -14,9 +14,9 @@ export async function applyForGift(formData: FormData) {
   const tariffId = formData.get("tariffId");
   if (typeof tariffId !== "string") return;
 
-  const supabase = await createClient();
+  const adminSupabase = createAdminClient();
 
-  const { data: pending } = await supabase
+  const { data: pending } = await adminSupabase
     .from("gift_applications")
     .select("id")
     .eq("user_id", user.id)
@@ -25,9 +25,16 @@ export async function applyForGift(formData: FormData) {
 
   if (pending) redirect("/dashboard?notice=already-pending");
 
+  await adminSupabase
+    .from("profiles")
+    .upsert(
+      { id: user.id, email: user.email ?? "", role: "user" },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
   // The unique partial index on gift_applications (one pending per user) is
   // the safety net if this check ever races with itself.
-  const { data: application, error: insertError } = await supabase
+  const { data: application, error: insertError } = await adminSupabase
     .from("gift_applications")
     .insert({ user_id: user.id, tariff_id: tariffId, status: "pending" })
     .select<string, { id: string; tariffs: { name: string; price: number } | null }>(
@@ -46,7 +53,6 @@ export async function applyForGift(formData: FormData) {
 
   // notification_logs has no insert policy for regular user sessions (see
   // 008_rls.sql) — writes go through the service-role client by design.
-  const adminSupabase = createAdminClient();
   await adminSupabase.from("notification_logs").insert({
     application_id: application.id,
     type: "telegram",
