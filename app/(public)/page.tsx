@@ -13,11 +13,13 @@ export default async function HomePage() {
   const pendingTariffIds = new Set<string>();
   const approvedUnusedTariffIds = new Set<string>();
 
+  let hasActiveGift = false;
+
   if (user) {
     const [{ data: access }, { data: applications }] = await Promise.all([
       supabase
         .from("user_access")
-        .select("tariff_id, expires_at")
+        .select("tariff_id, expires_at, source")
         .eq("user_id", user.id)
         .gt("expires_at", new Date().toISOString()),
       supabase
@@ -28,6 +30,7 @@ export default async function HomePage() {
 
     for (const row of access ?? []) {
       activeAccessByTariff.set(row.tariff_id, row.expires_at);
+      if (row.source === "gift") hasActiveGift = true;
     }
     for (const application of applications ?? []) {
       if (application.status === "pending") {
@@ -49,7 +52,7 @@ export default async function HomePage() {
           if (pendingTariffIds.has(tariff.id)) giftStatus = "pending";
           else if (approvedUnusedTariffIds.has(tariff.id))
             giftStatus = "approved-unused";
-          else if (hasAnyPending) giftStatus = "blocked";
+          else if (hasAnyPending || hasActiveGift) giftStatus = "blocked";
 
           return (
             <TariffCard

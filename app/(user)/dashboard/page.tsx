@@ -15,7 +15,7 @@ type ApplicationRow = {
 
 const NOTICES: Record<string, string> = {
   "already-pending": "You already have a pending gift application.",
-  "already-have-access": "You already have active access, so a gift application isn't needed.",
+  "already-have-gift": "You already have an active gift — you cannot apply for another one.",
   applied: "Your gift application has been submitted.",
 };
 

@@ -16,14 +16,24 @@ export async function applyForGift(formData: FormData) {
 
   const adminSupabase = createAdminClient();
 
-  const { data: pending } = await adminSupabase
-    .from("gift_applications")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("status", "pending")
-    .maybeSingle();
+  const [{ data: pending }, { data: giftAccess }] = await Promise.all([
+    adminSupabase
+      .from("gift_applications")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("status", "pending")
+      .maybeSingle(),
+    adminSupabase
+      .from("user_access")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("source", "gift")
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle(),
+  ]);
 
   if (pending) redirect("/dashboard?notice=already-pending");
+  if (giftAccess) redirect("/dashboard?notice=already-have-gift");
 
   await adminSupabase
     .from("profiles")
