@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { requireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -7,6 +9,7 @@ type AccessRow = { expires_at: string; tariffs: { name: string } | null };
 type ApplicationRow = {
   status: string;
   applied_at: string;
+  code_used: boolean;
   tariffs: { name: string } | null;
 };
 
@@ -37,7 +40,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   const { data: application } = await supabase
     .from("gift_applications")
-    .select<string, ApplicationRow>("status, applied_at, tariffs(name)")
+    .select<string, ApplicationRow>(
+      "status, applied_at, code_used, tariffs(name)"
+    )
     .eq("user_id", user.id)
     .order("applied_at", { ascending: false })
     .limit(1)
@@ -68,6 +73,11 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           >
             {application.status}
           </Badge>
+          {application.status === "approved" && !application.code_used && (
+            <Button size="sm" nativeButton={false} render={<Link href="/activate" />}>
+              Activate now
+            </Button>
+          )}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">No applications yet.</p>
