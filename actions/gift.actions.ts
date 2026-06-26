@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { generateActivationCode } from "@/lib/code";
-import { requireAuth } from "@/lib/auth";
+import { sendActivationCodeEmail } from "@/lib/email";
+import { requireAdmin, requireAuth } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendGiftApplicationNotification } from "@/lib/telegram";
@@ -71,9 +73,14 @@ export async function approveGift(
 
   const { data: application } = await supabase
     .from("gift_applications")
-    .select<string, { id: string; tariffs: { period_months: number } | null }>(
-      "id, tariffs(period_months)"
-    )
+    .select<
+      string,
+      {
+        id: string;
+        tariffs: { period_months: number } | null;
+        profiles: { email: string } | null;
+      }
+    >("id, tariffs(period_months), profiles(email)")
     .eq("id", applicationId)
     .maybeSingle();
 
@@ -81,6 +88,7 @@ export async function approveGift(
     return { success: false, error: "Application or tariff not found." };
   }
 
+  const activationCode = generateActivationCode();
   const expiresAt = new Date();
   expiresAt.setMonth(expiresAt.getMonth() + application.tariffs.period_months);
 
@@ -88,14 +96,24 @@ export async function approveGift(
     .from("gift_applications")
     .update({
       status: "approved",
-      activation_code: generateActivationCode(),
+      activation_code: activationCode,
       expires_at: expiresAt.toISOString(),
     })
     .eq("id", applicationId);
 
   if (error) return { success: false, error: error.message };
 
-  // TODO: send the activation code email to the user (step 8)
+  const email = await sendActivationCodeEmail(
+    application.profiles?.email ?? "",
+    activationCode
+  );
+
+  await supabase.from("notification_logs").insert({
+    application_id: applicationId,
+    type: "email",
+    status: email.success ? "sent" : "failed",
+    error_message: email.success ? null : email.error,
+  });
 
   return { success: true };
 }
@@ -111,4 +129,83 @@ export async function rejectGift(
 
   if (error) return { success: false, error: error.message };
   return { success: true };
+}
+
+// Admin-panel entry points for the same approve/reject logic the Telegram
+// webhook uses. The webhook authorizes via chat_id verification (it has no
+// session); this path authorizes via requireAdmin() instead, since it's
+// triggered by an admin's own authenticated click in /admin/gifts.
+export async function approveGiftFromPanel(formData: FormData) {
+  await requireAdmin();
+  const applicationId = formData.get("applicationId");
+  if (typeof applicationId !== "string") return;
+
+  await approveGift(applicationId);
+  revalidatePath("/admin/gifts");
+}
+
+export async function rejectGiftFromPanel(formData: FormData) {
+  await requireAdmin();
+  const applicationId = formData.get("applicationId");
+  if (typeof applicationId !== "string") return;
+
+  await rejectGift(applicationId);
+  revalidatePath("/admin/gifts");
+}
+
+export type ActivateGiftState = { error?: string } | undefined;
+
+export async function activateGift(
+  _prevState: ActivateGiftState,
+  formData: FormData
+): Promise<ActivateGiftState> {
+  const user = await requireAuth();
+  const code = formData.get("code");
+  if (typeof code !== "string" || code.trim() === "") {
+    return { error: "Activation code is required." };
+  }
+
+  const supabase = await createClient();
+
+  // RLS (gift_applications_select_own_or_admin) already scopes this lookup
+  // to the current user's own rows, but we still check ownership explicitly
+  // below for a correct, specific error message rather than relying on RLS
+  // silently returning nothing.
+  const { data: application } = await supabase
+    .from("gift_applications")
+    .select("id, user_id, tariff_id, code_used, expires_at")
+    .eq("activation_code", code.trim().toUpperCase())
+    .maybeSingle();
+
+  if (!application || application.user_id !== user.id) {
+    return { error: "Invalid activation code." };
+  }
+  if (application.code_used) {
+    return { error: "This code has already been used." };
+  }
+
+  const { data: access } = await supabase
+    .from("user_access")
+    .select("id")
+    .eq("user_id", user.id)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (access) {
+    return { error: "You already have active access." };
+  }
+
+  await supabase
+    .from("gift_applications")
+    .update({ code_used: true })
+    .eq("id", application.id);
+
+  await supabase.from("user_access").insert({
+    user_id: user.id,
+    tariff_id: application.tariff_id,
+    source: "gift",
+    expires_at: application.expires_at,
+  });
+
+  redirect("/success");
 }

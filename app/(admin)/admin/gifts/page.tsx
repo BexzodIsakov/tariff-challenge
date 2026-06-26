@@ -1,5 +1,7 @@
+import { approveGiftFromPanel, rejectGiftFromPanel } from "@/actions/gift.actions";
 import { AdminBackLink } from "@/components/admin-back-link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -45,6 +47,7 @@ export default async function AdminGiftsPage() {
               <TableHead>Tariff</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Applied</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,6 +70,32 @@ export default async function AdminGiftsPage() {
                 </TableCell>
                 <TableCell>
                   {new Date(application.applied_at).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {application.status === "pending" && (
+                    <div className="flex gap-2">
+                      <form action={approveGiftFromPanel}>
+                        <input
+                          type="hidden"
+                          name="applicationId"
+                          value={application.id}
+                        />
+                        <Button size="sm" type="submit">
+                          Approve
+                        </Button>
+                      </form>
+                      <form action={rejectGiftFromPanel}>
+                        <input
+                          type="hidden"
+                          name="applicationId"
+                          value={application.id}
+                        />
+                        <Button variant="outline" size="sm" type="submit">
+                          Reject
+                        </Button>
+                      </form>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
