@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { getSession } from "@/lib/auth";
@@ -13,6 +14,9 @@ export default async function LoginPage(props: PageProps<"/login">) {
     <div className="flex flex-1 flex-col items-center justify-center gap-4">
       <h1 className="text-2xl font-semibold">Sign in</h1>
       <GoogleSignInButton next={next} />
+      <Link href="/admin/login" className="text-sm text-muted-foreground underline">
+        Login as admin
+      </Link>
     </div>
   );
 }

@@ -18,7 +18,9 @@ export async function requireAuth() {
 }
 
 export const requireAdmin = cache(async () => {
-  const user = await requireAuth();
+  const user = await getSession();
+  if (!user) redirect("/admin/login");
+
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
