@@ -195,17 +195,21 @@ export async function activateGift(
     return { error: "You already have active access." };
   }
 
-  await supabase
+  const admin = createAdminClient();
+
+  await admin
     .from("gift_applications")
     .update({ code_used: true })
     .eq("id", application.id);
 
-  await supabase.from("user_access").insert({
+  const { error } = await admin.from("user_access").insert({
     user_id: user.id,
     tariff_id: application.tariff_id,
     source: "gift",
     expires_at: application.expires_at,
   });
+
+  if (error) return { error: "Failed to activate access. Please try again." };
 
   redirect("/success");
 }

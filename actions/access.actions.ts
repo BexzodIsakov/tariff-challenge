@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function grantAccess(formData: FormData) {
@@ -21,12 +22,15 @@ export async function grantAccess(formData: FormData) {
   const expiresAt = new Date();
   expiresAt.setMonth(expiresAt.getMonth() + tariff.period_months);
 
-  await supabase.from("user_access").insert({
+  const admin = createAdminClient();
+  const { error } = await admin.from("user_access").insert({
     user_id: user.id,
     tariff_id: tariffId,
     source: "payment",
     expires_at: expiresAt.toISOString(),
   });
+
+  if (error) throw new Error(error.message);
 
   redirect("/success");
 }
