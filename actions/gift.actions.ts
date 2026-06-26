@@ -25,15 +25,6 @@ export async function applyForGift(formData: FormData) {
 
   if (pending) redirect("/dashboard?notice=already-pending");
 
-  const { data: access } = await supabase
-    .from("user_access")
-    .select("id")
-    .eq("user_id", user.id)
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
-
-  if (access) redirect("/dashboard?notice=already-have-access");
-
   // The unique partial index on gift_applications (one pending per user) is
   // the safety net if this check ever races with itself.
   const { data: application, error: insertError } = await supabase

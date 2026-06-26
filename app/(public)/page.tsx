@@ -38,7 +38,6 @@ export default async function HomePage() {
     }
   }
 
-  const hasAnyActiveAccess = activeAccessByTariff.size > 0;
   const hasAnyPending = pendingTariffIds.size > 0;
 
   return (
@@ -50,7 +49,7 @@ export default async function HomePage() {
           if (pendingTariffIds.has(tariff.id)) giftStatus = "pending";
           else if (approvedUnusedTariffIds.has(tariff.id))
             giftStatus = "approved-unused";
-          else if (hasAnyPending || hasAnyActiveAccess) giftStatus = "blocked";
+          else if (hasAnyPending) giftStatus = "blocked";
 
           return (
             <TariffCard
