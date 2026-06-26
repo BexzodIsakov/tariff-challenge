@@ -1,8 +1,8 @@
 import { toggleTariff } from "@/actions/tariff.actions";
 import { AdminBackLink } from "@/components/admin-back-link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CreateTariffForm } from "@/components/create-tariff-form";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Table,
   TableBody,
@@ -56,9 +56,9 @@ export default async function AdminTariffsPage() {
                     name="isActive"
                     value={String(tariff.is_active)}
                   />
-                  <Button variant="outline" size="sm" type="submit">
+                  <SubmitButton variant="outline" size="sm">
                     {tariff.is_active ? "Deactivate" : "Activate"}
-                  </Button>
+                  </SubmitButton>
                 </form>
               </TableCell>
             </TableRow>

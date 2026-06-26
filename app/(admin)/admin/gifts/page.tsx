@@ -1,7 +1,7 @@
 import { approveGiftFromPanel, rejectGiftFromPanel } from "@/actions/gift.actions";
 import { AdminBackLink } from "@/components/admin-back-link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Table,
   TableBody,
@@ -79,9 +79,7 @@ export default async function AdminGiftsPage() {
                           name="applicationId"
                           value={application.id}
                         />
-                        <Button size="sm" type="submit">
-                          Approve
-                        </Button>
+                        <SubmitButton size="sm">Approve</SubmitButton>
                       </form>
                       <form action={rejectGiftFromPanel}>
                         <input
@@ -89,9 +87,7 @@ export default async function AdminGiftsPage() {
                           name="applicationId"
                           value={application.id}
                         />
-                        <Button variant="outline" size="sm" type="submit">
-                          Reject
-                        </Button>
+                        <SubmitButton variant="outline" size="sm">Reject</SubmitButton>
                       </form>
                     </div>
                   )}

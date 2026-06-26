@@ -2,6 +2,7 @@ import Link from "next/link";
 import { grantAccess } from "@/actions/access.actions";
 import { applyForGift } from "@/actions/gift.actions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 
 type Tariff = {
   id: string;
@@ -65,7 +66,7 @@ export function TariffCard({
           <>
             <form action={grantAccess}>
               <input type="hidden" name="tariffId" value={tariff.id} />
-              <Button type="submit">Buy</Button>
+              <SubmitButton>Buy</SubmitButton>
             </form>
             {giftStatus === "pending" ? (
               <Badge variant="secondary">Application pending</Badge>
@@ -80,9 +81,7 @@ export function TariffCard({
             ) : giftStatus === "blocked" ? null : (
               <form action={applyForGift}>
                 <input type="hidden" name="tariffId" value={tariff.id} />
-                <Button variant="outline" type="submit">
-                  Apply for gift
-                </Button>
+                <SubmitButton variant="outline">Apply for gift</SubmitButton>
               </form>
             )}
           </>

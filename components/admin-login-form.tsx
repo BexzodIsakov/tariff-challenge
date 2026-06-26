@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Loader2 } from "lucide-react";
 import { signInAdmin } from "@/actions/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ export function AdminLoginForm() {
         <p className="text-sm text-destructive">{state.error}</p>
       )}
       <Button type="submit" disabled={pending}>
+        {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Sign in
       </Button>
     </form>

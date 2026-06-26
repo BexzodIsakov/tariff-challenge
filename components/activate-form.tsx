@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Loader2 } from "lucide-react";
 import { activateGift } from "@/actions/gift.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ export function ActivateForm() {
         <p className="text-sm text-destructive">{state.error}</p>
       )}
       <Button type="submit" disabled={pending}>
+        {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Activate
       </Button>
     </form>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/actions/auth.actions";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import { getSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -39,9 +39,7 @@ export async function SiteHeader() {
               {isAdmin ? "Admin panel" : "Dashboard"}
             </Link>
             <form action={signOut}>
-              <Button variant="outline" size="sm" type="submit">
-                Sign out
-              </Button>
+              <SubmitButton variant="outline" size="sm">Sign out</SubmitButton>
             </form>
           </>
         ) : (
