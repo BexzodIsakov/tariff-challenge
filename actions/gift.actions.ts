@@ -181,15 +181,16 @@ export async function activateGift(
     return { error: "This code has already been used." };
   }
 
-  const { data: access } = await supabase
+  const { data: giftAccess } = await supabase
     .from("user_access")
     .select("id")
     .eq("user_id", user.id)
+    .eq("source", "gift")
     .gt("expires_at", new Date().toISOString())
     .maybeSingle();
 
-  if (access) {
-    return { error: "You already have active access." };
+  if (giftAccess) {
+    return { error: "You already have an active gift." };
   }
 
   const admin = createAdminClient();
