@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 // Action's own check plus the page re-render it triggers) hit Supabase once.
 export const getSession = cache(async () => {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  return data.user;
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) return null;
+  return data.session.user;
 });
 
 export async function requireAuth() {
