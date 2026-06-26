@@ -6,11 +6,10 @@ import { getSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export async function SiteHeader() {
-  const user = await getSession();
+  const [user, supabase] = await Promise.all([getSession(), createClient()]);
 
   let isAdmin = false;
   if (user) {
-    const supabase = await createClient();
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")

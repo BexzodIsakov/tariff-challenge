@@ -26,27 +26,25 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
       ? NOTICES[searchParams.notice]
       : undefined;
 
-  const user = await requireAuth();
-  const supabase = await createClient();
+  const [user, supabase] = await Promise.all([requireAuth(), createClient()]);
 
-  const { data: access } = await supabase
-    .from("user_access")
-    .select<string, AccessRow>("expires_at, tariffs(name)")
-    .eq("user_id", user.id)
-    .gt("expires_at", new Date().toISOString())
-    .order("expires_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const { data: application } = await supabase
-    .from("gift_applications")
-    .select<string, ApplicationRow>(
-      "status, applied_at, code_used, tariffs(name)"
-    )
-    .eq("user_id", user.id)
-    .order("applied_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [{ data: access }, { data: application }] = await Promise.all([
+    supabase
+      .from("user_access")
+      .select<string, AccessRow>("expires_at, tariffs(name)")
+      .eq("user_id", user.id)
+      .gt("expires_at", new Date().toISOString())
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("gift_applications")
+      .select<string, ApplicationRow>("status, applied_at, code_used, tariffs(name)")
+      .eq("user_id", user.id)
+      .order("applied_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   return (
     <div className="flex flex-1 flex-col items-center gap-6 px-6 py-16">

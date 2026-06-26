@@ -25,9 +25,8 @@ type GiftApplicationRow = {
 };
 
 export default async function AdminGiftsPage() {
-  await requireAdmin();
+  const [, supabase] = await Promise.all([requireAdmin(), createClient()]);
 
-  const supabase = await createClient();
   const { data: applications } = await supabase
     .from("gift_applications")
     .select<string, GiftApplicationRow>(

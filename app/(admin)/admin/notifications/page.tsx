@@ -23,9 +23,8 @@ type NotificationLogRow = {
 };
 
 export default async function AdminNotificationsPage() {
-  await requireAdmin();
+  const [, supabase] = await Promise.all([requireAdmin(), createClient()]);
 
-  const supabase = await createClient();
   const { data: logs } = await supabase
     .from("notification_logs")
     .select<string, NotificationLogRow>(

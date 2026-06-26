@@ -15,9 +15,8 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminTariffsPage() {
-  await requireAdmin();
+  const [, supabase] = await Promise.all([requireAdmin(), createClient()]);
 
-  const supabase = await createClient();
   const { data: tariffs } = await supabase
     .from("tariffs")
     .select("*")
