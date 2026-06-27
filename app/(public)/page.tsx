@@ -42,6 +42,7 @@ export default async function HomePage() {
   }
 
   const hasAnyPending = pendingTariffIds.size > 0;
+  const hasAnyApprovedUnused = approvedUnusedTariffIds.size > 0;
 
   return (
     <div className="flex flex-1 flex-col items-center gap-8 px-6 py-16">
@@ -52,7 +53,7 @@ export default async function HomePage() {
           if (pendingTariffIds.has(tariff.id)) giftStatus = "pending";
           else if (approvedUnusedTariffIds.has(tariff.id))
             giftStatus = "approved-unused";
-          else if (hasAnyPending || hasActiveGift) giftStatus = "blocked";
+          else if (hasAnyPending || hasAnyApprovedUnused || hasActiveGift) giftStatus = "blocked";
 
           return (
             <TariffCard

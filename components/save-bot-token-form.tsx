@@ -19,6 +19,9 @@ export function SaveBotTokenForm() {
       {state?.error && (
         <p className="text-sm text-destructive">{state.error}</p>
       )}
+      {state?.success && (
+        <p className="text-sm text-green-600">Token saved. Now open your bot in Telegram and press Start.</p>
+      )}
       <Button type="submit" disabled={pending}>
         {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Save

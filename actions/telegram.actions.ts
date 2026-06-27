@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { setWebhook } from "@/lib/telegram";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type SaveBotTokenState = { error?: string } | undefined;
+export type SaveBotTokenState = { error?: string; success?: boolean } | undefined;
 
 export async function saveBotToken(
   _prevState: SaveBotTokenState,
@@ -47,4 +47,5 @@ export async function saveBotToken(
   }
 
   revalidatePath("/admin/telegram");
+  return { success: true };
 }
