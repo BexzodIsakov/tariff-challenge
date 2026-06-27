@@ -70,6 +70,7 @@ export async function applyForGift(formData: FormData) {
     error_message: notification.success ? null : notification.error,
   });
 
+  revalidatePath("/");
   redirect("/dashboard?notice=applied");
 }
 
