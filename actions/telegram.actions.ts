@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { setWebhook } from "@/lib/telegram";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type SaveBotTokenState = { error?: string } | undefined;
 
@@ -30,7 +30,7 @@ export async function saveBotToken(
     };
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: existing } = await supabase
     .from("telegram_config")
     .select("id")

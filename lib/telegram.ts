@@ -34,6 +34,14 @@ export async function setWebhook(botToken: string, webhookUrl: string) {
   return callTelegramApi(botToken, "setWebhook", { url: webhookUrl });
 }
 
+export async function sendMessage(
+  botToken: string,
+  chatId: number,
+  text: string
+) {
+  return callTelegramApi(botToken, "sendMessage", { chat_id: chatId, text });
+}
+
 export async function answerCallbackQuery(
   botToken: string,
   callbackQueryId: string

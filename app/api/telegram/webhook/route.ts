@@ -1,7 +1,8 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { approveGift, rejectGift } from "@/actions/gift.actions";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { answerCallbackQuery } from "@/lib/telegram";
+import { answerCallbackQuery, sendMessage } from "@/lib/telegram";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest) {
         .from("telegram_config")
         .update({ approver_chat_id: chatId, is_active: true })
         .eq("id", config.id);
+      revalidatePath("/admin/telegram");
     }
 
     return NextResponse.json({ ok: true });
@@ -56,13 +58,22 @@ export async function POST(request: NextRequest) {
       error_message: result.success ? null : result.error,
     });
 
-    // The DB mutation above already succeeded — don't let a transient
-    // Telegram API failure here surface as a 500 and trigger a webhook retry
-    // that would re-process an already-handled approval/rejection.
+    revalidatePath("/admin/gifts");
+    revalidatePath("/dashboard");
+
+    // Don't let transient Telegram API failures surface as 500s and trigger
+    // webhook retries that would re-process an already-handled action.
     try {
       await answerCallbackQuery(config.bot_token, callbackQuery.id);
+      const label = action === "approve" ? "✅ Approved" : "❌ Rejected";
+      const detail = result.success
+        ? action === "approve"
+          ? " — activation code sent to user."
+          : " — user can apply again."
+        : ` — failed: ${result.error}`;
+      await sendMessage(config.bot_token, config.approver_chat_id, label + detail);
     } catch {
-      // Spinner just won't dismiss on the button; the action itself is done.
+      // Confirmation message failed; the action itself is already done.
     }
 
     return NextResponse.json({ ok: true });

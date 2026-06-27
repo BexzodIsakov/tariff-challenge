@@ -1,5 +1,6 @@
 import { approveGiftFromPanel, rejectGiftFromPanel } from "@/actions/gift.actions";
 import { AdminBackLink } from "@/components/admin-back-link";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -34,8 +35,11 @@ export default async function AdminGiftsPage() {
     )
     .order("applied_at", { ascending: false });
 
+  const hasPending = applications?.some((a) => a.status === "pending") ?? false;
+
   return (
     <div className="flex flex-1 flex-col gap-8 px-6 py-12">
+      <AutoRefresh enabled={hasPending} />
       <AdminBackLink />
       <h1 className="text-2xl font-semibold">Gift applications</h1>
       {applications?.length ? (
