@@ -8,10 +8,8 @@ A Next.js + Supabase app where users can mock-buy a tariff plan or apply for a f
 
 | Field    | Value               |
 | -------- | ------------------- |
-| Email    | `admin@example.com` |
-| Password | `Admin1234!`        |
-
-> **Replace these before submitting.** Create the admin user in Supabase Auth (email/password), then manually set `role = 'admin'` in the `profiles` table for that user.
+| Email    | `admin@tariff.test` |
+| Password | `admin123`          |
 
 ---
 
@@ -38,14 +36,14 @@ cp .env.local.example .env.local
 
 Fill in `.env.local`:
 
-| Variable                      | Where to get it                                              |
-| ----------------------------- | ------------------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`    | Supabase project → Settings → API → Project URL             |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project → Settings → API → anon key              |
-| `SUPABASE_SERVICE_ROLE_KEY`   | Supabase project → Settings → API → service_role key        |
-| `NEXT_PUBLIC_APP_URL`         | `http://localhost:3000` for local dev                        |
-| `RESEND_API_KEY`              | Create a free account at resend.com, generate an API key     |
-| `EMAIL_FROM`                  | Verified sender address in Resend (use `onboarding@resend.dev` for testing) |
+| Variable                        | Where to get it                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project → Settings → API → Project URL             |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project → Settings → API → anon key                |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase project → Settings → API → service_role key        |
+| `NEXT_PUBLIC_APP_URL`           | `http://localhost:3000` for local dev                        |
+| `SMTP_USER`                     | Your Gmail address                                           |
+| `SMTP_PASS`                     | Gmail → Google Account → Security → App Passwords            |
 
 ### 4. Create a Supabase project
 
