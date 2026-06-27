@@ -2,6 +2,10 @@
 
 A Next.js + Supabase app where users can mock-buy a tariff plan or apply for a free gift. Gift applications are approved or rejected by an admin via a Telegram bot. Approved users receive an email with an activation code to unlock access.
 
+**Live demo:** https://tariff-challenge.vercel.app
+
+![App screenshot](public/screenshot.png)
+
 ---
 
 ## Test admin credentials
@@ -69,7 +73,12 @@ Fill in `.env.local`:
 1. In Supabase → **Authentication → Users**, create a new user with email/password.
 2. In the **Table Editor → profiles**, find that user's row and set `role = 'admin'`.
 
-### 7. Run the dev server
+### 7. Add tariff plans
+
+1. Log in at `/admin/login` with the admin credentials.
+2. Go to **Tariffs** and create at least one plan (name, price, period in months).
+
+### 8. Run the dev server
 
 ```bash
 npm run dev
