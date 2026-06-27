@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Without generated Database types, the client can't tell these are
 // many-to-one embeds (each application has exactly one profile/tariff) and
@@ -26,7 +26,8 @@ type GiftApplicationRow = {
 };
 
 export default async function AdminGiftsPage() {
-  const [, supabase] = await Promise.all([requireAdmin(), createClient()]);
+  await requireAdmin();
+  const supabase = createAdminClient();
 
   const { data: applications } = await supabase
     .from("gift_applications")

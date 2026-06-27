@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type NotificationLogRow = {
   id: string;
@@ -23,7 +23,8 @@ type NotificationLogRow = {
 };
 
 export default async function AdminNotificationsPage() {
-  const [, supabase] = await Promise.all([requireAdmin(), createClient()]);
+  await requireAdmin();
+  const supabase = createAdminClient();
 
   const { data: logs } = await supabase
     .from("notification_logs")
